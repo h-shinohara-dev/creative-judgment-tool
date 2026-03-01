@@ -163,12 +163,51 @@
 /* ===== Summary Bar ===== */
 .summary-bar {
   display: flex;
+  align-items: center;
   gap: 24px;
   padding: 16px 20px;
   background: #161628;
   border-radius: 10px;
   margin-bottom: 24px;
   border: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.donut-chart {
+  flex-shrink: 0;
+  position: relative;
+  padding-bottom: 28px;
+}
+
+.donut-tooltip {
+  position: absolute;
+  top: 110%;
+  left: 50%;
+  transform: translateX(-50%);
+  background: #1e1e3a;
+  border: 1px solid transparent;
+  border-radius: 8px;
+  padding: 6px 12px;
+  font-size: 0.78rem;
+  white-space: nowrap;
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  color: #ccc;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+  z-index: 10;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.15s ease;
+}
+
+.donut-tooltip--visible {
+  opacity: 1;
+}
+
+.summary-counts {
+  display: flex;
+  gap: 24px;
+  flex: 1;
 }
 
 .summary-item {
@@ -187,6 +226,43 @@
 .summary-label {
   font-size: 0.72rem;
   color: #888;
+}
+
+/* ===== Filter Bar ===== */
+.filter-bar {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+.filter-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 14px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: #888;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1.5px solid rgba(255, 255, 255, 0.08);
+  border-radius: 20px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.filter-btn:hover {
+  background: rgba(255, 255, 255, 0.08);
+  color: var(--filter-color);
+}
+
+.filter-btn--active {
+  color: var(--filter-color);
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.filter-btn__count {
+  font-size: 0.7rem;
+  opacity: 0.7;
 }
 
 /* ===== Verdict Badge ===== */
@@ -312,11 +388,19 @@
   display: flex;
   align-items: center;
   gap: 12px;
-  margin-top: 28px;
-  padding: 24px 0 40px;
-  border-top: 1px solid rgba(255, 255, 255, 0.06);
+  padding: 20px 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
   flex-wrap: wrap;
   position: relative;
+  margin-bottom: 24px;
+}
+
+.export-actions:last-child {
+  border-bottom: none;
+  border-top: 1px solid rgba(255, 255, 255, 0.06);
+  margin-bottom: 0;
+  margin-top: 24px;
+  padding-bottom: 40px;
 }
 
 .btn-export {

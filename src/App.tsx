@@ -32,6 +32,7 @@ export function App() {
         {view === 'input' && <JsonInput onParse={handleParse} />}
         {view === 'preview' && data && (
           <>
+            <ExportActions data={data} onReset={handleReset} />
             <EvaluationPreview data={data} />
             <ExportActions data={data} onReset={handleReset} />
           </>
