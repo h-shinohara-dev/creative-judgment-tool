@@ -32,7 +32,7 @@ export function JsonInput({ onParse }: Props) {
       <textarea
         value={rawJson}
         onChange={(e) => setRawJson(e.target.value)}
-        placeholder={'{\n  "adName": "広告名",\n  "advertiser": "広告主名",\n  "industry": "通信",\n  "evaluatedAt": "2026-03-01T10:00:00Z",\n  "checkItems": [\n    {\n      "id": 1,\n      "category": "通信速度表示",\n      "item": "ベストエフォートである旨の記載があるか",\n      "verdict": "OK",\n      "reason": null,\n      "improvement": null\n    }\n  ]\n}'}
+        placeholder={'[\n  {\n    "No": 1,\n    "カテゴリ": "デザイン",\n    "チェック項目": "構成",\n    "判定": "OK",\n    "抽出テキスト": "...",\n    "備考": "情報の優先順位が明確です。"\n  }\n]'}
         rows={18}
         spellCheck={false}
       />

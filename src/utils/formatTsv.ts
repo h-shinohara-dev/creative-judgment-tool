@@ -1,6 +1,6 @@
 import type { AdEvaluation } from '../types/evaluation.ts';
 
-const HEADERS = ["No.", "カテゴリ", "点検項目", "判定", "理由", "改善案"];
+const HEADERS = ["No.", "カテゴリ", "チェック項目", "判定", "抽出テキスト", "備考", "改善案"];
 
 /** HTML table with inline styles — Google Sheets preserves these on paste */
 export function evaluationToHtml(data: AdEvaluation): string {
@@ -9,7 +9,7 @@ export function evaluationToHtml(data: AdEvaluation): string {
 
   const bodyRows = data.checkItems.map((c) => {
     const isNg = c.verdict === 'NG';
-    const isUnknown = c.verdict === '判定不可';
+    const isUnknown = c.verdict === '判定不可' || c.verdict === '確認不可';
 
     const cellStyle = 'padding:4px 8px;border:1px solid #ccc;font-size:13px';
     const verdictStyle = isNg
@@ -24,6 +24,7 @@ export function evaluationToHtml(data: AdEvaluation): string {
       <td style="${cellStyle}">${c.category}</td>
       <td style="${cellStyle}">${c.item}</td>
       <td style="${verdictStyle}">${c.verdict}</td>
+      <td style="${cellStyle}">${c.extractedText ?? ''}</td>
       <td style="${ngTextStyle}">${c.reason ?? ''}</td>
       <td style="${cellStyle}">${c.improvement ?? ''}</td>
     </tr>`;
@@ -39,6 +40,7 @@ export function evaluationToTsv(data: AdEvaluation): string {
     c.category,
     c.item,
     c.verdict,
+    c.extractedText ?? "",
     c.reason ?? "",
     c.improvement ?? "",
   ]);

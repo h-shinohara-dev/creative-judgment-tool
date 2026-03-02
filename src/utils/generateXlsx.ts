@@ -5,9 +5,10 @@ export function downloadAsXlsx(data: AdEvaluation): void {
   const headers = [
     "No.",
     "カテゴリ",
-    "点検項目",
+    "チェック項目",
     "判定",
-    "理由",
+    "抽出テキスト",
+    "備考",
     "改善案",
   ];
 
@@ -16,6 +17,7 @@ export function downloadAsXlsx(data: AdEvaluation): void {
     c.category,
     c.item,
     c.verdict,
+    c.extractedText ?? "",
     c.reason ?? "",
     c.improvement ?? "",
   ]);
@@ -27,6 +29,7 @@ export function downloadAsXlsx(data: AdEvaluation): void {
     { wch: 16 },
     { wch: 40 },
     { wch: 10 },
+    { wch: 50 },
     { wch: 50 },
     { wch: 50 },
   ];

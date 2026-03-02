@@ -8,7 +8,19 @@ type Props = {
   data: AdEvaluation;
 };
 
-function DonutChart({ counts, total }: { counts: Record<Verdict, number>; total: number }) {
+const ALL_VERDICTS: Verdict[] = ['OK', 'NG', '該当なし', '確認不可', '判定不可'];
+
+function verdictCssClass(verdict: Verdict): string {
+  switch (verdict) {
+    case 'OK': return 'ok';
+    case 'NG': return 'ng';
+    case '該当なし': return 'na';
+    case '確認不可': return 'unknown';
+    case '判定不可': return 'unknown';
+  }
+}
+
+function DonutChart({ counts, total, onFilter }: { counts: Record<Verdict, number>; total: number; onFilter: (v: VerdictFilter) => void }) {
   const [hovered, setHovered] = useState<Verdict | null>(null);
 
   const size = 100;
@@ -17,11 +29,9 @@ function DonutChart({ counts, total }: { counts: Record<Verdict, number>; total:
   const radius = (size - hoverStrokeWidth) / 2;
   const circumference = 2 * Math.PI * radius;
 
-  const segments: { verdict: Verdict; count: number }[] = [
-    { verdict: 'OK', count: counts.OK },
-    { verdict: 'NG', count: counts.NG },
-    { verdict: '判定不可', count: counts['判定不可'] },
-  ];
+  const segments = ALL_VERDICTS
+    .map((verdict) => ({ verdict, count: counts[verdict] }))
+    .filter((s) => s.count > 0);
 
   let offset = 0;
   const okRate = total > 0 ? Math.round((counts.OK / total) * 100) : 0;
@@ -38,7 +48,6 @@ function DonutChart({ counts, total }: { counts: Record<Verdict, number>; total:
           fill="none" stroke="rgba(255,255,255,0.06)" strokeWidth={strokeWidth}
         />
         {segments.map((seg) => {
-          if (seg.count === 0) return null;
           const dashLength = (seg.count / total) * circumference;
           const dashOffset = -offset;
           offset += dashLength;
@@ -58,6 +67,7 @@ function DonutChart({ counts, total }: { counts: Record<Verdict, number>; total:
               style={{ transition: 'stroke-width 0.2s, opacity 0.2s', cursor: 'pointer' }}
               onMouseEnter={() => setHovered(seg.verdict)}
               onMouseLeave={() => setHovered(null)}
+              onClick={() => onFilter(seg.verdict)}
             />
           );
         })}
@@ -92,10 +102,13 @@ export function EvaluationPreview({ data }: Props) {
     : evalDate.toLocaleString('ja-JP');
 
   const total = data.checkItems.length;
-  const counts: Record<Verdict, number> = { OK: 0, NG: 0, "判定不可": 0 };
+  const counts: Record<Verdict, number> = { OK: 0, NG: 0, "該当なし": 0, "確認不可": 0, "判定不可": 0 };
   for (const item of data.checkItems) {
     counts[item.verdict]++;
   }
+
+  // Only show verdict types that have items
+  const activeVerdicts = ALL_VERDICTS.filter((v) => counts[v] > 0);
 
   const filtered = filter === 'ALL'
     ? data.checkItems
@@ -124,21 +137,22 @@ export function EvaluationPreview({ data }: Props) {
       </div>
 
       <div className="summary-bar">
-        <DonutChart counts={counts} total={total} />
+        <DonutChart counts={counts} total={total} onFilter={setFilter} />
         <div className="summary-counts">
-          <div className="summary-item">
-            <span className="summary-count" style={{ color: VERDICT_COLORS.OK }}>{counts.OK}</span>
-            <span className="summary-label">OK</span>
-          </div>
-          <div className="summary-item">
-            <span className="summary-count" style={{ color: VERDICT_COLORS.NG }}>{counts.NG}</span>
-            <span className="summary-label">NG</span>
-          </div>
-          <div className="summary-item">
-            <span className="summary-count" style={{ color: VERDICT_COLORS["判定不可"] }}>{counts["判定不可"]}</span>
-            <span className="summary-label">判定不可</span>
-          </div>
-          <div className="summary-item">
+          {activeVerdicts.map((v) => (
+            <div
+              key={v}
+              className={`summary-item summary-item--clickable${filter === v ? ' summary-item--active' : ''}`}
+              onClick={() => setFilter(filter === v ? 'ALL' : v)}
+            >
+              <span className="summary-count" style={{ color: VERDICT_COLORS[v] }}>{counts[v]}</span>
+              <span className="summary-label">{v}</span>
+            </div>
+          ))}
+          <div
+            className={`summary-item summary-item--clickable${filter === 'ALL' ? ' summary-item--active' : ''}`}
+            onClick={() => setFilter('ALL')}
+          >
             <span className="summary-count">{total}</span>
             <span className="summary-label">全項目</span>
           </div>
@@ -146,9 +160,16 @@ export function EvaluationPreview({ data }: Props) {
       </div>
 
       <div className="filter-bar">
-        {(['ALL', 'OK', 'NG', '判定不可'] as VerdictFilter[]).map((v) => {
-          const count = v === 'ALL' ? total : counts[v];
-          const color = v === 'ALL' ? '#c0c0d0' : VERDICT_COLORS[v];
+        <button
+          className={`filter-btn${filter === 'ALL' ? ' filter-btn--active' : ''}`}
+          style={{ '--filter-color': '#c0c0d0', borderColor: filter === 'ALL' ? '#c0c0d0' : undefined } as React.CSSProperties}
+          onClick={() => setFilter('ALL')}
+        >
+          すべて
+          <span className="filter-btn__count">{total}</span>
+        </button>
+        {activeVerdicts.map((v) => {
+          const color = VERDICT_COLORS[v];
           return (
             <button
               key={v}
@@ -159,8 +180,8 @@ export function EvaluationPreview({ data }: Props) {
               } as React.CSSProperties}
               onClick={() => setFilter(v)}
             >
-              {v === 'ALL' ? 'すべて' : v}
-              <span className="filter-btn__count">{count}</span>
+              {v}
+              <span className="filter-btn__count">{counts[v]}</span>
             </button>
           );
         })}
@@ -171,7 +192,7 @@ export function EvaluationPreview({ data }: Props) {
           <div key={cat.name} className="check-category">
             <h3 className="category-title">{cat.name}</h3>
             {cat.items.map((item) => (
-              <div key={item.id} className={`check-item check-item--${item.verdict === "OK" ? "ok" : item.verdict === "NG" ? "ng" : "unknown"}`}>
+              <div key={item.id} className={`check-item check-item--${verdictCssClass(item.verdict)}`}>
                 <div className="check-item__header">
                   <span className="check-item__id">{item.id}</span>
                   <span className="check-item__name">{item.item}</span>
@@ -182,11 +203,19 @@ export function EvaluationPreview({ data }: Props) {
                     {item.verdict}
                   </span>
                 </div>
-                {(item.reason || item.improvement) && (
+                {(item.extractedText || item.reason || item.improvement) && (
                   <div className="check-item__details">
+                    {item.extractedText && (
+                      <div className="detail-row">
+                        <span className="detail-label detail-label--extracted">抽出テキスト</span>
+                        <span className="detail-text detail-text--extracted">{item.extractedText}</span>
+                      </div>
+                    )}
                     {item.reason && (
                       <div className="detail-row">
-                        <span className={`detail-label detail-label--${item.verdict === "OK" ? "ok-reason" : "reason"}`}>理由</span>
+                        <span className={`detail-label detail-label--${item.verdict === "OK" ? "ok-reason" : "reason"}`}>
+                          備考
+                        </span>
                         <span className="detail-text">{item.reason}</span>
                       </div>
                     )}
