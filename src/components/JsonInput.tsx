@@ -29,6 +29,10 @@ export function JsonInput({ onParse }: Props) {
   return (
     <div className="json-input">
       <h2>Gemini Gem 判定結果を入力</h2>
+      <div className="json-input__hint">
+        <span className="json-input__hint-icon">&#x1F4CB;</span>
+        Gem の JSON コードブロック右上のコピーボタンでコピーし、下のエリアに Ctrl+V で貼り付けてください
+      </div>
       <textarea
         value={rawJson}
         onChange={(e) => setRawJson(e.target.value)}

@@ -65,6 +65,11 @@ export function Onboarding({ onClose }: Props) {
             {isLast ? 'はじめる' : '次へ'}
           </button>
         </div>
+        {!isLast && (
+          <button className="btn-ghost onboarding-skip" onClick={onClose}>
+            スキップ
+          </button>
+        )}
       </div>
     </div>
   );
